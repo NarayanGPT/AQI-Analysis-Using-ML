@@ -1,0 +1,84 @@
+---
+title: "AQI Analysis using Machine Learning"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns #cerulean
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(dplyr)
+library(party)
+library(e1071)
+library(scales)
+library(class)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+mydata <- read.csv("C:\\Users\\Lenovo\\OneDrive\\Desktop\\LPU 7th Sem\\INT234\\INT234_Project\\data.csv")
+mydata$AQI <- ifelse(mydata[["PM.2.5"]] >= 0 & mydata[["PM.2.5"]] <= 30, "Good",
+                     ifelse(mydata[["PM.2.5"]] > 30 & mydata[["PM.2.5"]] <= 60, "Satisfactory",
+                            ifelse(mydata[["PM.2.5"]] > 60 & mydata[["PM.2.5"]] <= 90, "Moderate",
+                                   ifelse(mydata[["PM.2.5"]] > 90 & mydata[["PM.2.5"]] <= 120, "Poor",
+                                          ifelse(mydata[["PM.2.5"]] > 120 & mydata[["PM.2.5"]] <= 250, "Very Poor",
+                                                 ifelse(mydata[["PM.2.5"]] > 250, "Severe", NA))))))
+mydata$AQI <- as.factor(mydata$AQI)
+
+#sum(is.na(mydata)) 
+#mydata <- na.omit(mydata)
+
+
+mydata %>% ggplot(aes(x=T,y=`PM.2.5`))+ geom_point()
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### T vs PM.2.5 Chart
+
+```{r}
+# Bar Chart for PM2.5 on Y-axis and T on X-axis
+
+mydata %>%
+  ggplot(aes(x = T, y = `PM.2.5`)) +
+  geom_bar(stat = "identity", fill = "orange2") +
+  labs(title = "PM2.5 Levels over Temperature", x = "Temperature (T)", y = "PM2.5")
+
+```
+
+### AQI vs T Chart
+```{r}
+# Bar Chart for AQI (X-axis) and T (Y-axis) with Different Colors for AQI Categories
+#sum(is.na(mydata)) 
+mydata <- na.omit(mydata)
+ggplot(mydata, aes(x = AQI, y = T, fill = AQI)) +
+  geom_bar(stat = "identity") +
+  labs(title = "AQI Categories over Temperature", x = "AQI Category", y = "Temperature (T)") +
+  scale_y_continuous(breaks = seq(0, 50, 10), limits = c(0, 50))  # Set limits to spread the values
+
+```
+### AQI vs PM 2.5
+```{r}
+# Row 4: Bar Chart for AQI Categories on X-axis and PM2.5 on Y-axis
+#mydata <- na.omit(mydata)
+ggplot(data = mydata, aes(x = AQI, y = `PM.2.5`, fill = AQI)) +
+  geom_bar(stat = "identity") +
+  labs(title = "PM2.5 Levels by AQI Categories", x = "AQI Category", y = "PM2.5 Level") +
+  scale_y_continuous(breaks = seq(0, 400, 80), limits = c(0, 400)) 
+
+```
+### Algorithms Accuracy
+```{r}
+# Bar Chart for Accuracy of Each Algorithm
+ggplot(data = Overall_Accuracy, aes(x = Algorithms, y = Accuracy)) +
+  geom_bar(stat = "identity", fill = "maroon", color = "black") +
+  labs(title = "Algorithm Accuracy", x = "Algorithms", y = "Accuracy")
+```
